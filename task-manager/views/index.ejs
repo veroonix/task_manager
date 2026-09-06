@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #f9fafb;
+            --card-bg: #ffffff;
+            --text: #1f2937;
+        }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background-color: var(--bg);
+            line-height: 1.5; 
+            max-width: 600px; 
+            margin: 50px auto; 
+            padding: 20px; 
+            color: var(--text);
+        }
+        h1 { font-size: 1.8rem; margin-bottom: 1.5rem; text-align: center; }
+        .task-form { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .task-form form { display: flex; flex-direction: column; gap: 10px; }
+        .task-form input { padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; }
+        
+        .filter-section { margin-bottom: 1.5rem; display: flex; justify-content: flex-end; }
+        .filter-section select { padding: 8px; border-radius: 6px; border: 1px solid #d1d5db; }
+
+        .task-list { display: flex; flex-direction: column; gap: 12px; }
+        .task { 
+            background: var(--card-bg);
+            padding: 16px;
+            border-radius: 10px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.1s;
+        }
+        .task:hover { transform: translateY(-2px); }
+        .completed { opacity: 0.6; text-decoration: line-through; }
+        
+        button { 
+            padding: 8px 16px; 
+            cursor: pointer; 
+            background: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        button:hover { background: var(--primary-hover); }
+        
+        .file-link { color: var(--primary); text-decoration: none; font-size: 0.85rem; display: block; margin-top: 4px;}
+    </style>
+</head>
+<body>
+    <h1>Task Manager</h1>
+
+    <div class="task-form">
+        <form action="/add" method="POST" enctype="multipart/form-data">
+            <input type="text" name="title" placeholder="Что нужно сделать?" required>
+            <input type="date" name="dueDate">
+            <input type="file" name="attachment">
+            <button type="submit">Добавить задачу</button>
+        </form>
+    </div>
+
+    <div class="filter-section">
+        <form action="/" method="GET">
+            <select name="status" onchange="this.form.submit()">
+                <option value="all" <%= statusFilter === 'all' || !statusFilter ? 'selected' : '' %>>Все</option>
+                <option value="pending" <%= statusFilter === 'pending' ? 'selected' : '' %>>Активные</option>
+                <option value="completed" <%= statusFilter === 'completed' ? 'selected' : '' %>>Завершенные</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="task-list">
+        <% tasks.forEach(task => { %>
+            <div class="task <%= task.status === 'completed' ? 'completed' : '' %>">
+                <div class="task-info">
+                    <div style="font-weight: 600;"><%= task.title %></div>
+                    <small style="color: #6b7280;">Срок: <%= task.dueDate || 'не указан' %></small>
+                    <% if (task.attachment) { %>
+                        <a href="/uploads/<%= task.attachment %>" target="_blank" class="file-link">📎 Посмотреть файл</a>
+                    <% } %>
+                </div>
+                <form action="/toggle/<%= task.id %>" method="POST">
+                    <button type="submit"><%= task.status === 'pending' ? 'Готово' : 'Вернуть' %></button>
+                </form>
+            </div>
+        <% }); %>
+    </div>
+</body>
+</html>
